@@ -140,6 +140,8 @@ dependencies {
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.1"
   implementation "com.googlecode.mp4parser:isoparser:1.0.6"
 
+  implementation 'com.linkedin.android.litr:litr:1.4.11'
+
   // networking
   implementation 'com.amitshekhar.android:android-networking:1.0.2'
 

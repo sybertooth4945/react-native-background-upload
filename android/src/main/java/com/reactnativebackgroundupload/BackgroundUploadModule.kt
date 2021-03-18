@@ -1,10 +1,13 @@
 package com.reactnativebackgroundupload
 
 import android.annotation.SuppressLint
+import android.media.MediaFormat
 import android.net.Uri
 import android.util.Log
 import androidx.work.*
 import com.facebook.react.bridge.*
+import com.linkedin.android.litr.MediaTransformer
+import com.linkedin.android.litr.TransformationOptions
 import com.reactnativebackgroundupload.model.ModelRequestMetadata
 import com.reactnativebackgroundupload.model.ModelTranscodeInput
 import com.reactnativebackgroundupload.util.RealPathUtil
@@ -16,6 +19,39 @@ import kotlin.math.roundToInt
 class BackgroundUploadModule(private val reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
   override fun getName(): String {
     return "BackgroundUpload"
+  }
+
+  @ReactMethod
+  fun startTranscoder(channelId: Double, filePath: String) {
+    val mediaTransformer = MediaTransformer(reactContext)
+    val inputPath = RealPathUtil.getRealPath(reactContext, Uri.parse(filePath))
+    val outputPath = "${reactContext.getExternalFilesDir(null)}/${System.currentTimeMillis()}.mp4"
+
+    val videoFormat = MediaFormat()
+    videoFormat.setString(MediaFormat.KEY_MIME, "video/avc")
+    videoFormat.setInteger(MediaFormat.KEY_BIT_RATE, 1000000)
+    videoFormat.setInteger(MediaFormat.KEY_WIDTH, 1280)
+    videoFormat.setInteger(MediaFormat.KEY_HEIGHT, 720)
+    videoFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 5);
+    videoFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 30);
+
+    val audioFormat = MediaFormat()
+    audioFormat.setString(MediaFormat.KEY_MIME, "audio/mp4a-latm")
+    audioFormat.setInteger(MediaFormat.KEY_CHANNEL_COUNT, 2);
+    audioFormat.setInteger(MediaFormat.KEY_SAMPLE_RATE, 48000);
+    audioFormat.setInteger(MediaFormat.KEY_BIT_RATE, 128000)
+
+    val listener = MediaTransformationListener(reactContext, channelId.toString())
+
+    mediaTransformer.transform(
+      channelId.toString(),
+      Uri.parse(inputPath),
+      outputPath,
+      videoFormat,
+      audioFormat,
+      listener,
+      null
+    )
   }
 
   @ReactMethod

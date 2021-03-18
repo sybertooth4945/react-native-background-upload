@@ -75,6 +75,10 @@ class RNBackgroundUpload {
     );
   };
 
+  startTranscoder = (channelId: number, filePath: string): void => {
+    BackgroundUploadModule.startTranscoder(channelId, filePath);
+  };
+
   stopBackgroundUpload = async (workId: number): Promise<void> => {
     return await BackgroundUploadModule.stopBackgroundUpload(workId);
   };

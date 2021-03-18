@@ -37,18 +37,19 @@ export default function App() {
       } else if (response.errorCode) {
         console.log('ImagePicker Error: ', response.errorCode);
       } else if (response.uri) {
-        BackgroundUpload.startBackgroundUploadVideo(
-          uploadChannelId,
-          'https://localhost/uploadUrl',
-          'https://localhost/metaDataUrl',
-          response.uri,
-          1024 * 1024 * 2.5,
-          true,
-          null
-        ).then((workId: number) => {
-          console.log('workId', workId);
-          uploadWorkId.current = workId;
-        });
+        // BackgroundUpload.startBackgroundUploadVideo(
+        //   uploadChannelId,
+        //   'https://localhost/uploadUrl',
+        //   'https://localhost/metaDataUrl',
+        //   response.uri,
+        //   1024 * 1024 * 2.5,
+        //   true,
+        //   null
+        // ).then((workId: number) => {
+        //   console.log('workId', workId);
+        //   uploadWorkId.current = workId;
+        // });
+        BackgroundUpload.startTranscoder(uploadChannelId, response.uri);
       }
     });
   };
