@@ -12,6 +12,6 @@
 
 @interface BackgroundUpload : RCTEventEmitter <RCTBridgeModule>
 
-@property (nonatomic, strong) NSDictionary* stateMap;
+@property (nonatomic, strong) NSMutableDictionary* stateMap;
 
 @end

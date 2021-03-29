@@ -44,6 +44,14 @@
 
 RCT_EXPORT_MODULE()
 
+-(id) init {
+  self = [super init];
+  if (self) {
+    _stateMap = [[NSMutableDictionary alloc] init];
+  }
+  return self;
+}
+
 // Will be call to stop upload video
 RCT_EXPORT_METHOD(stopBackgroundUpload:(NSNumber * _Nonnull)workId resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject){
     resolve(workId);
@@ -126,15 +134,17 @@ RCT_EXPORT_METHOD(startBackgroundUploadVideo:(NSNumber * _Nonnull)workId
             NSLog(@"Upload error: %@", task.error.localizedDescription);
             [self onStateChange:workId state:StateFailed response:task.error.localizedDescription progress:@0];
             [self stopObserving];
-            return nil;
+            // Force this callback to fail.
+            return [BFTask taskWithError:[NSError errorWithDomain:@"RN Background upload video" code:-1 userInfo:nil]];
         }
         if (chainTask) {
             return [self processChainTask:chainTask fileName:fileName sessionManager:manager];
         }
         [self onStateChange:workId state:StateSuccess response:@"complete with no chain task" progress:@100];
         [self stopObserving];
-        return task;
-    }] continueWithBlock:^id _Nullable(BFTask* _Nonnull task) {
+        // Force this callback to fail.
+        return [BFTask taskWithError:[NSError errorWithDomain:@"RN Background upload video" code:-1 userInfo:nil]];
+    }] continueWithSuccessBlock:^id _Nullable(BFTask* _Nonnull task) {
         if (task.error != nil) {
             NSLog(@"Upload error: %@", task.error.localizedDescription);
             [self onStateChange:workId state:StateFailed response:task.error.localizedDescription progress:@0];
@@ -361,13 +371,19 @@ RCT_EXPORT_METHOD(startBackgroundUploadVideo:(NSNumber * _Nonnull)workId
 }
 
 -(NSString *) convertJsonStringFromNSDictionary:(NSDictionary *)dictionary {
-    NSError *error;
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dictionary options:NSJSONWritingPrettyPrinted error:&error];
-    if (!jsonData) {
-        NSLog(@"Got an error: %@", error);
+    @try {
+        NSError *error;
+        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dictionary options:NSJSONWritingPrettyPrinted error:&error];
+        if (!jsonData) {
+            NSLog(@"Got an error: %@", error);
+            return @"";
+        }
+        return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    } @catch (NSException *exception) {
+        NSLog(@"convertJsonStringFromNSDictionary exception: %@", exception.reason);
         return @"";
     }
-    return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    
 }
 
 -(void) cleanUpCache:(NSString *)filePath {
